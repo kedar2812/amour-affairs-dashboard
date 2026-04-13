@@ -1,0 +1,280 @@
+"use client";
+
+import React, { useState } from 'react';
+import { Search, Plus, Download, Calendar as CalendarIcon, List as ListIcon, LayoutDashboard, MoreHorizontal, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Drawer } from '@/components/ui/Drawer';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { bookings, teamMembers, Booking, TeamMember } from '@/data/mockData';
+import { KanbanView } from './components/KanbanView';
+
+// Badges Helper
+const getStatusClasses = (status: Booking['status']) => {
+  switch (status) {
+    case "Confirmed": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "Pending": return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "Completed": return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+    case "Cancelled": return "bg-red-500/10 text-red-500 border-red-500/20";
+    default: return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+  }
+};
+
+const getTypeClasses = (type: Booking['eventType']) => {
+  switch (type) {
+    case "Wedding": return "bg-primary/10 text-primary border-primary/20";
+    case "Pre-Wedding": return "bg-pink-500/10 text-pink-500 border-pink-500/20";
+    case "Corporate": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+    case "Portrait": return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+    default: return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+  }
+};
+
+export default function BookingsPage() {
+  const [activeTab, setActiveTab] = useState<"List" | "Calendar" | "Kanban">("List");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  const filteredBookings = bookings.filter(b => 
+    b.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    b.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="flex flex-col gap-6 max-w-[1540px] mx-auto w-full">
+      {/* Header Row */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Bookings</h1>
+          <p className="text-[14px] text-muted-foreground mt-1">Manage all your studio shoots and appointments.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search bookings..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-10 w-[240px] pl-9 pr-4 bg-card border border-border/50 rounded-xl text-[14px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
+          <Button variant="outline" className="h-10 px-4 rounded-xl border-border/50 bg-card/10 backdrop-blur-md">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button className="h-10 px-4 rounded-xl bg-primary text-primary-foreground border-none shadow-sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Booking
+          </Button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 bg-card/50 border border-border/50 p-1 rounded-xl w-max">
+        {(["List", "Calendar", "Kanban"] as const).map(tab => {
+          const Icon = tab === "List" ? ListIcon : tab === "Calendar" ? CalendarIcon : LayoutDashboard;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {tab}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="dash-card">
+        {activeTab === "List" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border/50 text-[12px] uppercase tracking-wider text-muted-foreground">
+                  <th className="px-6 py-4 font-semibold">Booking ID</th>
+                  <th className="px-6 py-4 font-semibold">Client</th>
+                  <th className="px-6 py-4 font-semibold">Event Type</th>
+                  <th className="px-6 py-4 font-semibold">Date & Time</th>
+                  <th className="px-6 py-4 font-semibold">Venue</th>
+                  <th className="px-6 py-4 font-semibold">Amount</th>
+                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 text-right font-semibold"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBookings.map((b) => (
+                  <tr 
+                    key={b.id} 
+                    onClick={() => setSelectedBooking(b)}
+                    className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors cursor-pointer group"
+                  >
+                    <td className="px-6 py-4 font-mono text-[13px] text-muted-foreground">{b.id}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 ring-2 ring-background">
+                          <AvatarFallback className="bg-primary/20 text-primary font-semibold text-xs text-center border border-primary/20">{b.clientName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-semibold text-[14px] text-foreground">{b.clientName}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border ${getTypeClasses(b.eventType)}`}>
+                        {b.eventType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[13px] text-foreground">
+                      {new Date(b.date).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      <span className="text-muted-foreground ml-1">· {new Date(b.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 text-[13px]">
+                        <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span className="text-foreground truncate max-w-[140px]">{b.venue}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-[14px] text-foreground">
+                      ₹{b.amount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${getStatusClasses(b.status)}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredBookings.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
+                      No bookings found for "{searchQuery}".
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === "Calendar" && (
+          <div className="p-8 text-center text-muted-foreground min-h-[400px] flex items-center justify-center">
+            Calendar view coming soon.
+          </div>
+        )}
+
+        {activeTab === "Kanban" && (
+          <KanbanView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
+        )}
+      </div>
+
+      {/* Detail Drawer */}
+      <Drawer
+        isOpen={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        width="480px"
+      >
+        {selectedBooking && (
+          <div className="p-0">
+            {/* Drawer Header Block */}
+            <div className="p-8 pb-6 border-b border-border/50 bg-muted/10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <CalendarIcon className="w-48 h-48" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-4">
+                  <Avatar className="h-16 w-16 ring-4 ring-background shadow-xl">
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xl">{selectedBooking.clientName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight">{selectedBooking.clientName}</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-mono text-sm text-muted-foreground">{selectedBooking.id}</span>
+                      <span className="w-1 h-1 rounded-full bg-border" />
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border ${getTypeClasses(selectedBooking.eventType)}`}>
+                        {selectedBooking.eventType}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Layout Box */}
+            <div className="p-8 space-y-8">
+              {/* Timing */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Event Schedule</h4>
+                <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border/50 shadow-sm">
+                  <div className="h-10 w-10 flex flex-col items-center justify-center bg-primary/10 rounded-lg text-primary shrink-0">
+                    <span className="text-[10px] font-semibold uppercase leading-none">{new Date(selectedBooking.date).toLocaleDateString('en-IN', { month: 'short' })}</span>
+                    <span className="text-lg font-bold leading-none mt-0.5">{new Date(selectedBooking.date).getDate()}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[15px] text-foreground">{new Date(selectedBooking.date).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric' })}</p>
+                    <p className="text-[13px] text-muted-foreground mt-0.5">
+                      {new Date(selectedBooking.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} &nbsp;—&nbsp; {new Date(selectedBooking.endDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Venue */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Venue</h4>
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 shadow-sm">
+                  <div className="h-10 w-10 flex items-center justify-center bg-muted rounded-lg shrink-0">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[15px] text-foreground">{selectedBooking.venue}</p>
+                    <p className="text-[13px] text-muted-foreground mt-0.5">{selectedBooking.city}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assignment */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Team Assigned</h4>
+                <div className="flex flex-col gap-2">
+                  {selectedBooking.teamAssignedIds.map(id => {
+                    const member = teamMembers.find(t => t.id === id);
+                    if (!member) return null;
+                    return (
+                      <div key={id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">{member.avatarInitials}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-[14px] font-semibold text-foreground leading-tight">{member.name}</p>
+                          <p className="text-[12px] text-muted-foreground">{member.role}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Sticky Actions */}
+            <div className="sticky bottom-0 p-6 bg-card border-t border-border/50 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">Total Amount</p>
+                <p className="text-xl text-foreground font-bold leading-tight">₹{selectedBooking.amount.toLocaleString('en-IN')}</p>
+              </div>
+              <Button className="rounded-xl px-6 bg-primary text-primary-foreground font-semibold shadow-md">
+                Edit Booking
+              </Button>
+            </div>
+          </div>
+        )}
+      </Drawer>
+    </div>
+  );
+}
