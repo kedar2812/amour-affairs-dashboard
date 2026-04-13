@@ -87,7 +87,7 @@ export function RevenueChart() {
         <div className="flex-1 px-4 pb-3 min-h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barGap={3} barSize={20}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
               <XAxis
                 dataKey="name"
                 axisLine={false}
@@ -102,9 +102,9 @@ export function RevenueChart() {
                 tickFormatter={(val) => `${val}L`}
                 dx={-4}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F9FAFB", radius: 4 }} />
-              <Bar dataKey="realised" name="Realised" fill="#C8956C" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="projected" name="Projected" fill="#E5E7EB" radius={[4, 4, 0, 0]} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.8, radius: 4 }} />
+              <Bar dataKey="realised" name="Realised" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="projected" name="Projected" fill="var(--muted-foreground)" fillOpacity={0.25} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
