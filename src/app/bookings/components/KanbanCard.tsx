@@ -30,8 +30,8 @@ export function KanbanCard({ booking, isOverlay, onClick }: KanbanCardProps) {
     isDragging,
   } = useSortable({ id: booking.id, data: booking });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
+  const style = isOverlay ? {} : {
+    transform: CSS.Translate.toString(transform),
     transition,
   };
 
@@ -41,12 +41,12 @@ export function KanbanCard({ booking, isOverlay, onClick }: KanbanCardProps) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={isOverlay ? undefined : setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(isOverlay ? {} : attributes)}
+      {...(isOverlay ? {} : listeners)}
       onClick={onClick}
-      className={`dash-card p-4 cursor-grab active:cursor-grabbing hover:bg-muted/30 transition-colors select-none ${isOverlay ? 'shadow-2xl scale-105 cursor-grabbing z-50 ring-2 ring-primary/20' : ''}`}
+      className={`dash-card p-4 select-none ${isOverlay ? 'shadow-2xl cursor-grabbing z-50 ring-2 ring-primary/20 w-[296px]' : 'cursor-grab active:cursor-grabbing hover:bg-muted/30 transition-colors'}`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">

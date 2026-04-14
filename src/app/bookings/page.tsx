@@ -7,6 +7,7 @@ import { Drawer } from '@/components/ui/Drawer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { bookings, teamMembers, Booking, TeamMember } from '@/data/mockData';
 import { KanbanView } from './components/KanbanView';
+import { CalendarView } from './components/CalendarView';
 
 // Badges Helper
 const getStatusClasses = (status: Booking['status']) => {
@@ -31,13 +32,18 @@ const getTypeClasses = (type: Booking['eventType']) => {
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<"List" | "Calendar" | "Kanban">("List");
+  const [allBookings, setAllBookings] = useState<Booking[]>(bookings);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const filteredBookings = bookings.filter(b => 
+  const filteredBookings = allBookings.filter(b => 
     b.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     b.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleUpdateBookingStatus = (bookingId: string, newStatus: Booking['status']) => {
+    setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-[1540px] mx-auto w-full">
@@ -164,13 +170,11 @@ export default function BookingsPage() {
         )}
 
         {activeTab === "Calendar" && (
-          <div className="p-8 text-center text-muted-foreground min-h-[400px] flex items-center justify-center">
-            Calendar view coming soon.
-          </div>
+          <CalendarView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
         )}
 
         {activeTab === "Kanban" && (
-          <KanbanView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
+          <KanbanView bookings={filteredBookings} onBookingClick={setSelectedBooking} onStatusChange={handleUpdateBookingStatus} />
         )}
       </div>
 
