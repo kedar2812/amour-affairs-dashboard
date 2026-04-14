@@ -35,6 +35,17 @@ export function CalendarView({ bookings, onBookingClick }: CalendarViewProps) {
   // Let's set initial view to April 2025 since mock data centers around there
   const [currentDate, setCurrentDate] = useState(new Date(2025, 3, 1)); // Month is 0-indexed, so 3 = April
 
+  // Pre-group bookings by date for O(1) lookup performance
+  const bookingsByDate = React.useMemo(() => {
+    const map = new Map<string, Booking[]>();
+    bookings.forEach(b => {
+      const dateKey = format(new Date(b.date), 'yyyy-MM-dd');
+      if (!map.has(dateKey)) map.set(dateKey, []);
+      map.get(dateKey)!.push(b);
+    });
+    return map;
+  }, [bookings]);
+
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
@@ -82,7 +93,8 @@ export function CalendarView({ bookings, onBookingClick }: CalendarViewProps) {
         {/* Calendar Body */}
         <div className="grid grid-cols-7 flex-1 auto-rows-fr">
           {daysInCalendar.map((day, idx) => {
-            const dayBookings = bookings.filter(b => isSameDay(new Date(b.date), day));
+            const dateKey = format(day, 'yyyy-MM-dd');
+            const dayBookings = bookingsByDate.get(dateKey) || [];
             const isCurrentMonth = isSameMonth(day, monthStart);
             const isTodayDate = isToday(day);
 

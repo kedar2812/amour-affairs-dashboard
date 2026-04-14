@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { bookings } from "@/data/mockData";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -15,9 +16,9 @@ import {
   Settings,
 } from "lucide-react";
 
-const MENU_ITEMS = [
+const MENU_ITEMS: { name: string; href: string; icon: any; badge?: string }[] = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Bookings", href: "/bookings", icon: CalendarDays, badge: "12+" },
+  { name: "Bookings", href: "/bookings", icon: CalendarDays },
   { name: "Leads", href: "/leads", icon: Contact },
   { name: "Clients", href: "/clients", icon: Users },
   { name: "Team", href: "/team", icon: Camera },

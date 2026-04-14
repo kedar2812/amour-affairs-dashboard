@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                   cursor={{ fill: 'var(--border)', opacity: 0.2 }}
                   contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
                 />
-                <Bar dataKey="value" fill="#3b82f6" barSize={16} radius={[0, 4, 4, 0]} label={{ position: 'right', fill: 'var(--foreground)', fontSize: 13, fontWeight: 'bold', formatter: (val: number) => `${val}%` }} />
+                <Bar dataKey="value" fill="#3b82f6" barSize={16} radius={[0, 4, 4, 0]} label={{ position: 'right', fill: 'var(--foreground)', fontSize: 13, fontWeight: 'bold', formatter: (val: any) => `${val}%` }} />
               </BarChart>
             </ResponsiveContainer>
           </div>

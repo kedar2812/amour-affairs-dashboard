@@ -2,7 +2,7 @@
 
 // --- INTERFACES --- //
 
-export type EventType = "Wedding" | "Pre-Wedding" | "Corporate" | "Portrait" | "Maternity" | "Engagement" | "Other";
+export type EventType = "Wedding" | "Pre-Wedding" | "Corporate" | "Portrait" | "Maternity" | "Engagement" | "Family" | "Other";
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 export type LeadStage = "New Inquiry" | "Contacted" | "Consultation Scheduled" | "Proposal Sent" | "Won" | "Lost";
 export type LeadSource = "Instagram" | "WhatsApp" | "Google" | "Referral" | "Website";

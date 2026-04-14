@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Download, Calendar as CalendarIcon, List as ListIcon, LayoutDashboard, MoreHorizontal, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Drawer } from '@/components/ui/Drawer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ExportMenu } from '@/components/ui/ExportMenu';
+import { flattenBookings } from '@/lib/exportUtils';
 import { bookings, teamMembers, Booking, TeamMember } from '@/data/mockData';
 import { KanbanView } from './components/KanbanView';
 import { CalendarView } from './components/CalendarView';
@@ -95,10 +98,27 @@ export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const filteredBookings = allBookings.filter(b => 
-    b.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    b.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  React.useEffect(() => {
+    const handleSync = (e: any) => {
+      const { newBooking, isEdit } = e.detail;
+      if (isEdit) {
+        setAllBookings(prev => prev.map(b => b.id === newBooking.id ? newBooking : b));
+      } else {
+        setAllBookings(prev => [newBooking, ...prev]);
+      }
+      setSelectedBooking(newBooking);
+    };
+    window.addEventListener('booking-synced', handleSync);
+    return () => window.removeEventListener('booking-synced', handleSync);
+  }, []);
+
+  const filteredBookings = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return allBookings.filter(b => 
+      b.clientName.toLowerCase().includes(query) || 
+      b.id.toLowerCase().includes(query)
+    );
+  }, [allBookings, searchQuery]);
 
   const handleUpdateBookingStatus = (bookingId: string, newStatus: Booking['status']) => {
     setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
@@ -123,11 +143,16 @@ export default function BookingsPage() {
               className="h-10 w-[240px] pl-9 pr-4 bg-card border border-border/50 rounded-xl text-[14px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
-          <Button variant="outline" className="h-10 px-4 rounded-xl border-border/50 bg-card/10 backdrop-blur-md">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button className="h-10 px-4 rounded-xl bg-primary text-primary-foreground border-none shadow-sm">
+          <ExportMenu
+            datasets={[flattenBookings(filteredBookings)]}
+            filename="amour-affairs-bookings"
+            pdfTitle="Bookings Export"
+            variant="inline"
+          />
+          <Button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-add-booking'))}
+            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground border-none shadow-sm"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Booking
           </Button>
@@ -153,16 +178,25 @@ export default function BookingsPage() {
         })}
       </div>
 
-      {/* Main Content Area */}
-      <div className="dash-card">
-        {activeTab === "List" && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border/50 text-[12px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-6 py-4 font-semibold">Booking ID</th>
-                  <th className="px-6 py-4 font-semibold">Client</th>
-                  <th className="px-6 py-4 font-semibold">Event Type</th>
+      {/* Tab Content Areas */}
+      <div className="flex-1 w-full relative">
+        <AnimatePresence mode="popLayout">
+          {activeTab === "List" && (
+            <motion.div 
+              key="List"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full p-6 flex flex-col"
+            >
+              <div className="dash-card overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/50 text-[12px] uppercase tracking-wider text-muted-foreground">
+                      <th className="px-6 py-4 font-semibold">Booking ID</th>
+                      <th className="px-6 py-4 font-semibold">Client</th>
+                      <th className="px-6 py-4 font-semibold">Event Type</th>
                   <th className="px-6 py-4 font-semibold">Date & Time</th>
                   <th className="px-6 py-4 font-semibold">Venue</th>
                   <th className="px-6 py-4 font-semibold">Amount</th>
@@ -227,15 +261,35 @@ export default function BookingsPage() {
               </tbody>
             </table>
           </div>
+          </motion.div>
         )}
 
         {activeTab === "Calendar" && (
-          <CalendarView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
+          <motion.div 
+            key="Calendar"
+             initial={{ opacity: 0, scale: 0.99, y: 5 }}
+             animate={{ opacity: 1, scale: 1, y: 0 }}
+             exit={{ opacity: 0, scale: 0.99, y: 5 }}
+             transition={{ duration: 0.2, ease: "easeOut" }}
+             className="w-full flex"
+          >
+            <CalendarView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
+          </motion.div>
         )}
 
         {activeTab === "Kanban" && (
-          <KanbanView bookings={filteredBookings} onBookingClick={setSelectedBooking} onStatusChange={handleUpdateBookingStatus} />
+          <motion.div 
+            key="Kanban"
+             initial={{ opacity: 0, scale: 0.98 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.98 }}
+             transition={{ duration: 0.2, ease: "easeOut" }}
+             className="w-full flex"
+          >
+            <KanbanView bookings={filteredBookings} onBookingClick={setSelectedBooking} onStatusChange={handleUpdateBookingStatus} />
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
 
       {/* Detail Drawer */}
@@ -332,7 +386,10 @@ export default function BookingsPage() {
                 <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">Total Amount</p>
                 <p className="text-xl text-foreground font-bold leading-tight">₹{selectedBooking.amount.toLocaleString('en-IN')}</p>
               </div>
-              <Button className="rounded-xl px-6 bg-primary text-primary-foreground font-semibold shadow-md">
+              <Button 
+                onClick={() => window.dispatchEvent(new CustomEvent('open-add-booking', { detail: { bookingToEdit: selectedBooking } }))}
+                className="rounded-xl px-6 bg-[#c9a96e] text-black hover:bg-[#d6b981] font-semibold shadow-md border-none"
+              >
                 Edit Booking
               </Button>
             </div>

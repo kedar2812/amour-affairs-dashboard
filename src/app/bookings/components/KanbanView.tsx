@@ -118,6 +118,16 @@ export function KanbanView({ bookings: initialBookings, onBookingClick, onStatus
     ? (COLUMNS.includes(overId as any) ? overId : items.find(b => b.id === overId)?.status) 
     : null;
 
+  // Memoize grouped items to avoid redundant filtering in the render loop
+  const groupedItems = React.useMemo(() => {
+    const groups: Record<string, Booking[]> = {};
+    COLUMNS.forEach(col => groups[col] = []);
+    items.forEach(item => {
+      if (groups[item.status]) groups[item.status].push(item);
+    });
+    return groups;
+  }, [items]);
+
   return (
     <DndContext 
       sensors={sensors}
@@ -127,18 +137,21 @@ export function KanbanView({ bookings: initialBookings, onBookingClick, onStatus
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-6 overflow-x-auto pb-4 h-full min-h-[600px] p-6">
-        {COLUMNS.map(columnId => (
-          <KanbanColumn key={columnId} id={columnId} title={columnId} isHighlighted={highlightedColumn === columnId}>
-            <SortableContext 
-              items={items.filter(b => b.status === columnId).map(b => b.id)} 
-              strategy={verticalListSortingStrategy}
-            >
-              {items.filter(b => b.status === columnId).map(b => (
-                <KanbanCard key={b.id} booking={b} onClick={() => onBookingClick(b)} />
-              ))}
-            </SortableContext>
-          </KanbanColumn>
-        ))}
+        {COLUMNS.map(columnId => {
+          const columnBookings = groupedItems[columnId] || [];
+          return (
+            <KanbanColumn key={columnId} id={columnId} title={columnId} isHighlighted={highlightedColumn === columnId}>
+              <SortableContext 
+                items={columnBookings.map(b => b.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {columnBookings.map(b => (
+                  <KanbanCard key={b.id} booking={b} onClick={() => onBookingClick(b)} />
+                ))}
+              </SortableContext>
+            </KanbanColumn>
+          );
+        })}
       </div>
       <DragOverlay modifiers={[snapCenterToCursor, restrictToWindowEdges]}>
         {activeItem ? <KanbanCard booking={activeItem} isOverlay /> : null}

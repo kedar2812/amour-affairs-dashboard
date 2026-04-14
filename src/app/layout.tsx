@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ToastProvider } from "@/lib/ToastContext";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -28,8 +29,9 @@ export default function RootLayout({
     >
       <body className="flex bg-background text-foreground h-screen overflow-hidden">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {/* Sidebar Container */}
-          <div className="p-3 pr-0 h-full flex shrink-0">
+          <ToastProvider>
+            {/* Sidebar Container */}
+            <div className="p-3 pr-0 h-full flex shrink-0">
             <Sidebar />
           </div>
 
@@ -44,9 +46,10 @@ export default function RootLayout({
             <main className="flex-1 h-full overflow-y-auto pt-[116px] px-8 pb-12">
               {children}
             </main>
-          </div>
-        </ThemeProvider>
-      </body>
+            </div>
+            </ToastProvider>
+          </ThemeProvider>
+        </body>
     </html>
   );
 }

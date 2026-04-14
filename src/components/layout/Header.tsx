@@ -3,10 +3,47 @@
 import { Search, Bell, Plus, Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ExportMenu } from "@/components/ui/ExportMenu";
+import { AddBookingModal } from "@/components/bookings/AddBookingModal";
+import { bookings, leads, clients, teamMembers, packages } from "@/data/mockData";
+import type { Booking } from "@/data/mockData";
+import {
+  flattenBookings,
+  flattenLeads,
+  flattenClients,
+  flattenTeam,
+  flattenPackages,
+} from "@/lib/exportUtils";
+import { useState, useEffect, useMemo } from "react";
 
 export function Header() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null);
+
+  useEffect(() => {
+    const handleOpen = (e: any) => {
+      setBookingToEdit(e.detail?.bookingToEdit || null);
+      setIsModalOpen(true);
+    };
+    window.addEventListener('open-add-booking', handleOpen);
+    return () => window.removeEventListener('open-add-booking', handleOpen);
+  }, []);
+
+  // Build the full dashboard export payload
+  const allDatasets = useMemo(
+    () => [
+      flattenBookings(bookings),
+      flattenLeads(leads),
+      flattenClients(clients),
+      flattenTeam(teamMembers),
+      flattenPackages(packages),
+    ],
+    []
+  );
+
   return (
-    <header className="h-[72px] bg-card/60 dark:bg-card/40 backdrop-blur-[120px] rounded-2xl flex items-center justify-between px-8 shrink-0 shadow-sm border-none">
+    <>
+      <header className="h-[72px] bg-card/60 dark:bg-card/40 backdrop-blur-[120px] rounded-2xl flex items-center justify-between px-8 shrink-0 shadow-sm border-none">
       {/* Left: Title + subtitle (Donezo-style) */}
       <div>
         <h2 className="text-xl font-bold text-foreground">Dashboard</h2>
@@ -27,16 +64,21 @@ export function Header() {
         </div>
 
         {/* Add Booking — Sparklink "+New Product" style */}
-        <Button className="h-10 px-4 flex items-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-[14px] font-semibold shadow-sm transition-colors border-none">
+        <Button 
+          onClick={() => window.dispatchEvent(new CustomEvent('open-add-booking'))}
+          className="h-10 px-4 flex items-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-[14px] font-semibold shadow-sm transition-colors border-none"
+        >
           <Plus className="h-4 w-4" />
           Add Booking
         </Button>
 
-        {/* Export (Sparklink-style "Export as") */}
-        <Button variant="outline" className="h-10 px-4 flex items-center gap-2 rounded-xl text-[14px] font-medium border-border/50 bg-card/10 text-foreground hover:bg-card/20 backdrop-blur-md transition-colors">
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        {/* Export — Full Dashboard Data */}
+        <ExportMenu
+          datasets={allDatasets}
+          filename="amour-affairs-full-export"
+          pdfTitle="Full Dashboard Export — All Data"
+          variant="header"
+        />
 
         {/* Mail (Donezo-style) */}
         <button className="h-10 w-10 flex items-center justify-center rounded-xl border border-border/50 bg-card/10 hover:bg-card/20 backdrop-blur-md transition-colors">
@@ -54,6 +96,23 @@ export function Header() {
           <ThemeToggle />
         </div>
       </div>
-    </header>
+      </header>
+
+      <AddBookingModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        bookingToEdit={bookingToEdit}
+        onSuccess={(newBooking, isEdit, clientType) => {
+          if (isEdit) {
+            const idx = bookings.findIndex(b => b.id === newBooking.id);
+            if (idx > -1) bookings[idx] = newBooking;
+          } else {
+            bookings.unshift(newBooking);
+          }
+          setIsModalOpen(false);
+          window.dispatchEvent(new CustomEvent('booking-synced', { detail: { newBooking, isEdit } }));
+        }}
+      />
+    </>
   );
 }
