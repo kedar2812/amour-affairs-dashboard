@@ -1,22 +1,22 @@
 "use client";
 import { motion } from "framer-motion";
+import { Timeframe, calculateFunnelData, filterDataByTimeframe } from "@/lib/analyticsUtils";
+import { bookings, leads } from "@/data/mockData";
 
 /*
  * Zentra-style waterfall/funnel:
  * Clean horizontal bars with step numbers, drop-off indicators.
  */
-const funnelData = [
-  { stage: "Inquiry Received", count: 245, color: "#C8956C" },
-  { stage: "Consultation Done", count: 180, color: "#D4A574" },
-  { stage: "Proposal Sent", count: 120, color: "#B07D55" },
-  { stage: "Booking Confirmed", count: 85, color: "#9B6A47" },
-  { stage: "Shoot Completed", count: 60, color: "#7C5538" },
-  { stage: "Album Delivered", count: 45, color: "#5D402A" },
-];
 
-export function FunnelChart() {
-  const maxCount = funnelData[0].count;
-  const totalConversion = ((funnelData[funnelData.length - 1].count / funnelData[0].count) * 100).toFixed(1);
+export function FunnelChart({ timeframe }: { timeframe: Timeframe }) {
+  const filteredBookings = filterDataByTimeframe(bookings, timeframe);
+  const filteredLeads = filterDataByTimeframe(leads, timeframe);
+  const funnelData = calculateFunnelData(filteredLeads, filteredBookings);
+
+  const maxCount = funnelData[0].count || 1;
+  const totalConversion = funnelData[0].count > 0 
+    ? ((funnelData[funnelData.length - 1].count / funnelData[0].count) * 100).toFixed(1)
+    : "0.0";
 
   return (
     <motion.div

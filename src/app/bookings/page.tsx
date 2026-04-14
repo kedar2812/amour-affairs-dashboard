@@ -11,6 +11,7 @@ import { flattenBookings } from '@/lib/exportUtils';
 import { bookings, teamMembers, Booking, TeamMember } from '@/data/mockData';
 import { KanbanView } from './components/KanbanView';
 import { CalendarView } from './components/CalendarView';
+import { YearView } from './components/YearView';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 
 // Badges Helper
@@ -93,7 +94,7 @@ function StatusDropdown({ currentStatus, onStatusChange }: { currentStatus: Book
 }
 
 export default function BookingsPage() {
-  const [activeTab, setActiveTab] = useState<"List" | "Calendar" | "Kanban">("List");
+  const [activeTab, setActiveTab] = useState<"List" | "Calendar" | "Kanban" | "Year">("List");
   const [allBookings, setAllBookings] = useState<Booking[]>(bookings);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -161,7 +162,7 @@ export default function BookingsPage() {
 
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-card/50 border border-border/50 p-1 rounded-xl w-max">
-        {(["List", "Calendar", "Kanban"] as const).map(tab => {
+        {(["List", "Calendar", "Kanban", "Year"] as const).map(tab => {
           const Icon = tab === "List" ? ListIcon : tab === "Calendar" ? CalendarIcon : LayoutDashboard;
           return (
             <button
@@ -274,6 +275,19 @@ export default function BookingsPage() {
              className="w-full flex"
           >
             <CalendarView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
+          </motion.div>
+        )}
+
+        {activeTab === "Year" && (
+          <motion.div 
+            key="Year"
+             initial={{ opacity: 0, scale: 0.98 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.98 }}
+             transition={{ duration: 0.2, ease: "easeOut" }}
+             className="w-full"
+          >
+            <YearView bookings={filteredBookings} onBookingClick={setSelectedBooking} />
           </motion.div>
         )}
 
