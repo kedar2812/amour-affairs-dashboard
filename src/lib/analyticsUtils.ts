@@ -2,7 +2,7 @@
 import { Booking, Lead, Transaction } from "@/data/mockData";
 import { isWithinInterval, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, parseISO, isSameDay, isSameWeek, isSameMonth, isSameYear, subDays, subMonths, subWeeks, subYears } from "date-fns";
 
-export type Timeframe = "Today" | "This Week" | "This Month" | "This Year" | "All Time";
+export type Timeframe = "Today" | "This Week" | "This Month" | "This Quarter" | "This Year" | "All Time";
 
 export function filterDataByTimeframe<T extends { date?: string; eventDate?: string }>(data: T[], timeframe: Timeframe, referenceDate: Date = new Date("2025-05-15")) {
   if (timeframe === "All Time") return data;
