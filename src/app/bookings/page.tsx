@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { bookings, teamMembers, Booking, TeamMember } from '@/data/mockData';
 import { KanbanView } from './components/KanbanView';
 import { CalendarView } from './components/CalendarView';
+import { LiquidButton } from '@/components/ui/liquid-glass-button';
 
 // Badges Helper
 const getStatusClasses = (status: Booking['status']) => {
@@ -29,6 +30,64 @@ const getTypeClasses = (type: Booking['eventType']) => {
     default: return "bg-slate-500/10 text-slate-500 border-slate-500/20";
   }
 };
+
+// Status Dropdown Wrapper
+function StatusDropdown({ currentStatus, onStatusChange }: { currentStatus: Booking['status'], onStatusChange: (status: Booking['status']) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const statuses: Booking['status'][] = ["Pending", "Confirmed", "Completed", "Cancelled"];
+
+  return (
+    <div className="relative" ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
+      <LiquidButton 
+        size="sm" 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`h-7 px-4 text-[11px] font-bold tracking-wider rounded-full ${getStatusClasses(currentStatus)}`}
+      >
+        {currentStatus}
+      </LiquidButton>
+      
+      {isOpen && (
+        <div className="absolute top-10 -left-4 z-50 w-36 p-1.5 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-200">
+          
+          {/* Liquid Glass Background Layers */}
+          <div className="pointer-events-none absolute top-0 left-0 z-0 h-full w-full rounded-xl 
+            shadow-[0_0_6px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3px_rgba(0,0,0,0.9),inset_-3px_-3px_0.5px_-3px_rgba(0,0,0,0.85),inset_1px_1px_1px_-0.5px_rgba(0,0,0,0.6),inset_-1px_-1px_1px_-0.5px_rgba(0,0,0,0.6),inset_0_0_6px_6px_rgba(0,0,0,0.12),inset_0_0_2px_2px_rgba(0,0,0,0.06),0_0_12px_rgba(255,255,255,0.15)] 
+            transition-all 
+            dark:shadow-[0_0_8px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3.5px_rgba(255,255,255,0.09),inset_-3px_-3px_0.5px_-3.5px_rgba(255,255,255,0.85),inset_1px_1px_1px_-0.5px_rgba(255,255,255,0.6),inset_-1px_-1px_1px_-0.5px_rgba(255,255,255,0.6),inset_0_0_6px_6px_rgba(255,255,255,0.12),inset_0_0_2px_2px_rgba(255,255,255,0.06),0_0_12px_rgba(0,0,0,0.15)]" />
+          <div
+            className="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden rounded-xl bg-background/60"
+            style={{ backdropFilter: 'blur(12px) url("#container-glass")' }}
+          />
+
+          {/* Menu Items */}
+          <div className="relative z-10 flex flex-col gap-1 w-full">
+            {statuses.map(status => (
+              <button 
+                key={status} 
+                onClick={() => { onStatusChange(status); setIsOpen(false); }}
+                className={`text-left px-3 py-2 text-xs font-semibold rounded-lg transition-all ${status === currentStatus ? 'bg-muted/60 shadow-sm ' + getStatusClasses(status) : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<"List" | "Calendar" | "Kanban">("List");
@@ -146,9 +205,10 @@ export default function BookingsPage() {
                       ₹{b.amount.toLocaleString('en-IN')}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${getStatusClasses(b.status)}`}>
-                        {b.status}
-                      </span>
+                      <StatusDropdown 
+                        currentStatus={b.status} 
+                        onStatusChange={(newStatus) => handleUpdateBookingStatus(b.id, newStatus)} 
+                      />
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
