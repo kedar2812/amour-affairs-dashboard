@@ -241,7 +241,7 @@ export function AddBookingModal({ isOpen, onClose, bookingToEdit, onSuccess }: A
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-0">
+      <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-0">
         
         {/* Modal Shell */}
         <div className="bg-card border border-border rounded-2xl w-full max-w-[680px] max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">

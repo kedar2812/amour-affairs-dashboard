@@ -53,7 +53,7 @@ export function Drawer({ isOpen, onClose, title, children, width = "420px" }: Dr
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            style={{ zIndex: 49 }}
+            style={{ zIndex: 99 }}
           />
 
           {/* Drawer Panel */}
@@ -63,7 +63,7 @@ export function Drawer({ isOpen, onClose, title, children, width = "420px" }: Dr
             exit={{ x: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed top-0 right-0 bottom-0 bg-card border-l border-border/50 shadow-2xl flex flex-col"
-            style={{ width, zIndex: 50 }}
+            style={{ width, zIndex: 100 }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-border/50 shrink-0">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ExportMenu } from "@/components/ui/ExportMenu";
 import { AddBookingModal } from "@/components/bookings/AddBookingModal";
+import { GlobalSearch } from "./GlobalSearch";
 import { bookings, leads, clients, teamMembers, packages } from "@/data/mockData";
 import type { Booking } from "@/data/mockData";
 import {
@@ -52,16 +53,8 @@ export function Header() {
 
       {/* Right: Actions (Sparklink-style) */}
       <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search bookings..."
-            className="h-10 w-56 pl-9 pr-10 bg-muted/50 border border-border/50 rounded-xl text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-          />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground bg-card border border-border/50 px-1.5 py-0.5 rounded font-mono">⌘F</kbd>
-        </div>
+        {/* Supercharged Global Search Component */}
+        <GlobalSearch />
 
         {/* Add Booking — Sparklink "+New Product" style */}
         <Button 
