@@ -1,66 +1,59 @@
 "use client";
-
 import { motion } from "framer-motion";
-import { TrendingUp, CalendarCheck, IndianRupee, BookOpen, Eye, ArrowUpRight } from "lucide-react";
-import { Booking, bookings, leads, Lead, Transaction, transactions } from "@/data/mockData";
-import { Timeframe, filterDataByTimeframe, calculateRevenue } from "@/lib/analyticsUtils";
-import { format } from "date-fns";
+import { TrendingUp, TrendingDown, CalendarCheck, IndianRupee, BookOpen, Eye, ArrowUpRight } from "lucide-react";
 
-export function KPICards({ timeframe }: { timeframe: Timeframe }) {
-  // 1. Filter Data
-  const currentBookings = filterDataByTimeframe(bookings, timeframe);
-  const currentLeads = filterDataByTimeframe(leads, timeframe);
-  const currentRevenue = calculateRevenue(currentBookings);
-  
-  // 2. Shoots This Week (Constant logic for this specific card usually)
-  const shootsThisWeek = filterDataByTimeframe(bookings, "This Week");
+/*
+ * Sparklink-style KPI cards: colored icon box on the left, 
+ * large value, change indicator badge, and a subtle trend arrow button.
+ */
+const metrics = [
+  {
+    title: "Total Bookings",
+    value: "142",
+    change: "+12%",
+    changeLabel: "Increased from last month",
+    changeType: "positive" as const,
+    icon: BookOpen,
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    borderColor: "border-l-primary",
+  },
+  {
+    title: "Gross Revenue",
+    value: "₹4.2L",
+    change: "+8.3%",
+    changeLabel: "Increased from last month",
+    changeType: "positive" as const,
+    icon: IndianRupee,
+    iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-500",
+    borderColor: "border-l-emerald-500",
+  },
+  {
+    title: "Active Inquiries",
+    value: "28",
+    change: "+4",
+    changeLabel: "Increased from last month",
+    changeType: "positive" as const,
+    icon: Eye,
+    iconBg: "bg-blue-50 dark:bg-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-500",
+    borderColor: "border-l-blue-500",
+  },
+  {
+    title: "Shoots This Week",
+    value: "6",
+    change: "2",
+    changeLabel: "On Discuss",
+    changeType: "neutral" as const,
+    icon: CalendarCheck,
+    iconBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-500",
+    borderColor: "border-l-amber-500",
+  },
+];
 
-  const metrics = [
-    {
-      title: "Gross Revenue",
-      value: currentRevenue >= 100000 ? `₹${(currentRevenue / 100000).toFixed(1)}L` : `₹${(currentRevenue / 1000).toFixed(0)}K`,
-      change: "+8.3%",
-      changeLabel: `${timeframe} revenue`,
-      changeType: "positive" as const,
-      icon: IndianRupee,
-      iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
-      iconColor: "text-emerald-600 dark:text-emerald-500",
-      borderColor: "border-l-emerald-500",
-    },
-    {
-      title: "Total Bookings",
-      value: currentBookings.length.toString(),
-      change: "+12%",
-      changeLabel: `Events in ${timeframe.toLowerCase()}`,
-      changeType: "positive" as const,
-      icon: BookOpen,
-      iconBg: "bg-primary/10",
-      iconColor: "text-primary",
-      borderColor: "border-l-primary",
-    },
-    {
-      title: "New Inquiries",
-      value: currentLeads.length.toString(),
-      change: "+4",
-      changeLabel: `Leads in ${timeframe.toLowerCase()}`,
-      changeType: "positive" as const,
-      icon: Eye,
-      iconBg: "bg-blue-50 dark:bg-blue-500/10",
-      iconColor: "text-blue-600 dark:text-blue-500",
-      borderColor: "border-l-blue-500",
-    },
-    {
-      title: "Shoots This Week",
-      value: shootsThisWeek.length.toString(),
-      change: "2",
-      changeLabel: "Studio schedule",
-      changeType: "neutral" as const,
-      icon: CalendarCheck,
-      iconBg: "bg-amber-50 dark:bg-amber-500/10",
-      iconColor: "text-amber-600 dark:text-amber-500",
-      borderColor: "border-l-amber-500",
-    },
-  ];
+export function KPICards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
       {metrics.map((metric, index) => (
